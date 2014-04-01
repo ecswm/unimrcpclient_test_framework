@@ -1,0 +1,8 @@
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\bin\Debug\AMCTester.exe.config
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\bin\Debug\AMCTester.exe
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\bin\Debug\AMCTester.pdb
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\bin\Debug\AMC.dll
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\bin\Debug\AMC.pdb
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\obj\x86\Debug\AMCTester.csprojResolveAssemblyReference.cache
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\obj\x86\Debug\AMCTester.exe
+C:\MyProjects\AndroidHandlerForDNet\AMCTester\obj\x86\Debug\AMCTester.pdb
