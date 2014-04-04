@@ -128,7 +128,6 @@ namespace Tests
                         d("channel id: " + channel.GetChannelId() + " current channel recv unexpect response");
                         //Send Remove channel msg
                         channel.SendRemoveChannel();
-
                     }
                 }
                 else if (_mrcpmethod == (int)MrcpMethod.RECOGNIZER_STOP)
@@ -170,12 +169,17 @@ namespace Tests
             if (_open)
                 _file.Close();
             //set timer to check last result            
+            StartTimer();
+        }
+
+        public virtual void StartTimer()
+        {
             lock (_stoptimer)
             {
-                if (!_stoptimer.Enabled)
-                {
+               if (!_stoptimer.Enabled)
+               {
                    _stoptimer.Start();
-                } 
+               }
             }
         }
 
@@ -191,14 +195,14 @@ namespace Tests
                 //RECOGNIZER_RECOGNITION_COMPLETE result
                 if (resultflag)
                 {
-                    //TODO send stop message
+                    //send stop message
                     SendStopChannel(_mrcp);
                     var timer = (Timer)sender;
                     timer.Stop();
                 }
                 else
                 {
-                    //TODO Timeout log
+                    //Timeout log
                     d("channle id :" + _mrcp.GetChannelId() + " timeout!!!");
                 }
             }
@@ -213,16 +217,17 @@ namespace Tests
 
         }
 
+        public HWSingleTestCase(String name, StreamWriter logStream) : base(name,logStream)
+        {
+
+        }
+
         public override void ProcessRecognizeResult(IMrcpChannel channel,IMrcpMessage msg)
         {
             d("channel id: " + channel.GetChannelId() + " recv recognizer_recognition_complete");
             ParseNLResult(msg);
             resultflag = true;
-            lock (_stoptimer)
-            {
-                _stoptimer.Start();
-            }
-        }
+        }             
     }
 
     public class HWCcontinuousTestCase : HWTestCase
@@ -230,6 +235,13 @@ namespace Tests
         public HWCcontinuousTestCase(String name)
             : base(name)
         {
+      
+        }
+
+        public HWCcontinuousTestCase(String name, StreamWriter logStream)
+            : base(name, logStream)
+        {
+
         }
 
         public override void ProcessRecognizeResult(IMrcpChannel channel,IMrcpMessage msg)
@@ -246,6 +258,7 @@ namespace Tests
                 }
             }
         }
+  
     }
 
     public class TestApp : BaseApp
@@ -267,12 +280,13 @@ namespace Tests
                 int index = 0;
                 if (tcases == null)
                 {
-                    tcases = new HWSingleTestCase[1];
-                    while (index < 1)
+                    tcases = new HWCcontinuousTestCase[20];
+                    while (index < 20)
                     {
-                        tcases[index] = new HWSingleTestCase("HW_TEST" + Convert.ToString(index));
+                        StreamWriter logStream = new StreamWriter("HW_TEST"+Convert.ToString(index),false);
+                        tcases[index] = new HWCcontinuousTestCase("HW_TEST" + Convert.ToString(index), logStream);
                         tcases[index].filename = "D:\\liukaijin\\16bit8k//1946076.wav";
-                        tcases[index].grxml = "http://192.168.5.72:8080/asr_gram/qw_dc.grxml";
+                        tcases[index].grxml = "http://192.168.5.72:8080/asr_gram/qw_lx.grxml";
                         index++;
                     }  
                 }
