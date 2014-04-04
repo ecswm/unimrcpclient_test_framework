@@ -5,6 +5,7 @@
 
 using namespace System::Runtime::InteropServices;
 using ucf::MrcpConst;
+using ucf::MrcpMethod;
 
 static String^ getCLRS2(apt_str_t* pAptStr){
 	if(pAptStr->length <= 0){
@@ -38,11 +39,20 @@ void MrcpChannel::SendMessage(ucf::IMrcpMessage^ msg){
 	MrcpMessage^ message = (MrcpMessage^)msg;
 	mrcp_application_message_send(mSession, mChannel, message->GetNativeMessage());
 }
+
+void MrcpChannel::SendRemoveChannel()
+{
+	mrcp_application_channel_remove(mSession,mChannel);
+}
+
 ucf::IMrcpMessage^ MrcpChannel::CreateMessage(int type){
 	int nativeType = -1;
 	switch(type){
-	case (int)MrcpConst::RECOGNIZER_RECOGNIZE:
+	case (int)MrcpMethod::RECOGNIZER_RECOGNIZE:
 		nativeType = RECOGNIZER_RECOGNIZE;
+		break;
+	case (int)MrcpMethod::RECOGNIZER_STOP:
+		nativeType = RECOGNIZER_STOP;
 		break;
 	}
 	mrcp_message_t *mrcp_message = mrcp_application_message_create(mSession, mChannel, nativeType);

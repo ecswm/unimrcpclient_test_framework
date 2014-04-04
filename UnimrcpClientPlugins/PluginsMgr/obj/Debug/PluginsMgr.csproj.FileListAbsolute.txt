@@ -19,10 +19,8 @@ E:\project\MyProjects\UnimrcpClientPlugins\PluginsMgr\bin\Debug\PluginTemplates.
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\PluginsMgr.dll
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\PluginsMgr.pdb
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\AMC.dll
-E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\PluginTemplates.dll
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\unimrcpclient_plugin_framework.dll
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\AMC.pdb
-E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\PluginTemplates.pdb
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\bin\Debug\unimrcpclient_plugin_framework.pdb
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\obj\Debug\ResolveAssemblyReference.cache
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\PluginsMgr\obj\Debug\PluginsMgr.dll

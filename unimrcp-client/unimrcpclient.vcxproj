@@ -114,7 +114,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AppMessage.cpp">
+    <ClCompile Include="src\AppMessage.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsManaged>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
       <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExceptionHandling>
@@ -124,6 +124,8 @@
       <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExceptionHandling>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</BufferSecurityCheck>
+      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="src\demo_bypass_application.c" />
     <ClCompile Include="src\demo_discover_application.c" />
@@ -175,15 +177,21 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\MyProjects\UnimrcpClientPlugins\PluginsMgr\PluginsMgr.csproj">
-      <Project>{ca471ae0-ee20-4025-988b-c389fdd10577}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\MyProjects\UnimrcpClientPlugins\unimrcpclient_plugin_framework\unimrcpclient_plugin_framework.csproj">
-      <Project>{2c4c642b-e902-43c1-8c73-924d11d38407}</Project>
+    <ProjectReference Include="..\AndroidHandlerForDNet\AMC\AMC.csproj">
+      <Project>{c36fa814-9edf-41f8-9cc0-4851ffd8fdb1}</Project>
     </ProjectReference>
     <ProjectReference Include="..\libunimrcp-client\libunimrcpclient.vcxproj">
       <Project>{ee157390-1e85-416c-946e-620e32c9ad33}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\UnimrcpClientPlugins\PluginsMgr\PluginsMgr.csproj">
+      <Project>{ca471ae0-ee20-4025-988b-c389fdd10577}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\UnimrcpClientPlugins\Plugins\PluginTemplates\PluginStub.csproj">
+      <Project>{ca52f9a0-abe5-488f-97f9-ce8714c83761}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\UnimrcpClientPlugins\unimrcpclient_plugin_framework\unimrcpclient_plugin_framework.csproj">
+      <Project>{2c4c642b-e902-43c1-8c73-924d11d38407}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

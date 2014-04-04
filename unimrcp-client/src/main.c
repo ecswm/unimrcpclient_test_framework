@@ -57,13 +57,13 @@ static apt_bool_t demo_framework_cmdline_process(demo_framework_t *framework, ch
 
 	if(strcasecmp(name,"run") == 0) {
 		char *app_name = apr_strtok(NULL, " ", &last);
-		if(app_name) {
+		if(app_name) 
+		{
 				char *profile_name = apr_strtok(NULL," ",&last);
 				if (!profile_name)
 				{
 					profile_name = "uni2";
 				}
-			}
 			demo_framework_app_run(framework,app_name,profile_name, fromCLR(session));
 		}
 	}

@@ -32,7 +32,7 @@
     <ClCompile Include="src\main.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="AppMessage.cpp">
+    <ClCompile Include="src\AppMessage.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

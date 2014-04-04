@@ -178,6 +178,8 @@ static mrcp_channel_t* recog_application_channel_create(mrcp_session_t *session,
 			termination,               /* media termination, used to terminate audio stream */
 			NULL,                      /* RTP descriptor, used to create RTP termination (NULL by default) */
 			recog_channel);            /* object to associate */
+	
+	recog_channel->channel = channel;
 	return channel;
 }
 
@@ -323,20 +325,7 @@ static apt_bool_t recog_application_on_define_grammar(mrcp_application_t *applic
 	}
 	
 	if(recog_channel) {
-		apr_pool_t *pool = mrcp_application_session_pool_get(session);
-		char *file_name = apr_psprintf(pool,"one-%dkHz.pcm",descriptor->sampling_rate/1000);
-		char *file_path = apt_datadir_filepath_get(dir_layout,file_name,pool);
-		if(file_path) {
-			recog_channel->audio_in = fopen(file_path,"rb");
-			if(recog_channel->audio_in) {
-				apt_log(APT_LOG_MARK,APT_PRIO_INFO,"Set [%s] as Speech Source",file_path);
-			}
-			else {
-				apt_log(APT_LOG_MARK,APT_PRIO_INFO,"Cannot Find [%s]",file_path);
-				/* set some estimated time to complete */
-				recog_channel->time_to_complete = 5000; // 5 sec
-			}
-		}
+		
 	}
 	return TRUE;
 }
@@ -449,18 +438,20 @@ static apt_bool_t recog_app_stream_read(mpf_audio_stream_t *stream, mpf_frame_t 
 	recog_app_channel_t *recog_channel = (recog_app_channel_t *)stream->obj;
 	ucf::ITestCase^ clrS = getCLRS(recog_channel->clr);
 
-	if(recog_channel && recog_channel->streaming == TRUE) {
+	if(recog_channel && clrS->Streaming == TRUE) {
+		int read = 0;
 		array<unsigned char>^ audio_data = clrS->OnStreamRead(
 			MrcpChannel::GetChannel(recog_channel->channel)
-			, frame->codec_frame.size);		
-		if(audio_data->Length == (int)frame->codec_frame.size) {
+			, frame->codec_frame.size,read);		
+		if(read == (int)frame->codec_frame.size) {
 			/* normal read */
-
+			IntPtr frame_buf(frame->codec_frame.buffer);
+			System::Runtime::InteropServices::Marshal::Copy(audio_data, 0, frame_buf, audio_data->Length);
 			frame->type |= MEDIA_FRAME_TYPE_AUDIO;
 		}
 		else {
 			/* file is over */
-			recog_channel->streaming = FALSE;
+			clrS->OnStreamOut(MrcpChannel::GetChannel(recog_channel->channel));
 		}
 #if 0
 		else {
@@ -471,12 +462,11 @@ static apt_bool_t recog_app_stream_read(mpf_audio_stream_t *stream, mpf_frame_t 
 				recog_channel->time_to_complete -= CODEC_FRAME_TIME_BASE;
 			}
 			else {
-				recog_channel->streaming = FALSE;
+				clrS->OnStreamOut(MrcpChannel::GetChannel(recog_channel->channel));
 			}
 		}
 #endif
 	}else{
-		clrS->OnStreamOut(MrcpChannel::GetChannel(recog_channel->channel));
 	}
 	return TRUE;
 }

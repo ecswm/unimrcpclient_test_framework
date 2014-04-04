@@ -32,6 +32,11 @@ namespace ucf
             get { return new ITestCase[0]; }
         }
 
+        public virtual bool CaseLimit()
+        {
+            return true;
+        }
+
         public virtual void OnCreate(IMrcpChannelMgr mgr)
         {
             _channelMgr = mgr;

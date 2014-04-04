@@ -69,6 +69,7 @@ public:
 	~MrcpChannel(){
 		//message is allocated in channel pool, no need to free
 	}
+	virtual void SendRemoveChannel();
 	virtual ucf::IMrcpChannelMgr^ GetMgr(){return MGR;}
 };
 

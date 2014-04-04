@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ucf;
+using AMC;
 
 namespace ucf
 {
@@ -27,12 +28,17 @@ namespace ucf
         String Name { get; }
         ITestCase[] Cases { get; }
         IMrcpChannelMgr ChannelMgr { get; }
+        bool CaseLimit();
         void OnCreate(IMrcpChannelMgr mgr);
         void OnDestory();        
     }
 
     public interface ITestCase : ILog
     {
+        bool Streaming { get; }
+        
+        bool State { get; set;}
+
         String Name { get; }
         /// <summary>
         /// Command string to run in Unimrcpclient console        
@@ -60,10 +66,10 @@ namespace ucf
         void OnChannelAdd(IMrcpChannel channel);
         void OnChannelRemove(IMrcpChannel channel);        
         void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg);        
-        byte[] OnStreamRead(IMrcpChannel channel, int size);
+        byte[] OnStreamRead(IMrcpChannel channel, int size,out int read);
         void OnStreamOut(IMrcpChannel channel);
-
         void OnCreate(ITestApp app);
         void OnDestory();
+        void SetRunningState();
     }
 }

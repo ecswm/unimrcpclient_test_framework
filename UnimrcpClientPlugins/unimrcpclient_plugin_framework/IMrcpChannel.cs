@@ -7,20 +7,6 @@ namespace ucf
 {
     public enum MrcpConst : int
     {
-        RECOGNIZER_SET_PARAMS = 0,
-        RECOGNIZER_GET_PARAMS,
-        RECOGNIZER_DEFINE_GRAMMAR,
-        RECOGNIZER_RECOGNIZE,
-        RECOGNIZER_INTERPRET,
-        RECOGNIZER_GET_RESULT,
-        RECOGNIZER_START_INPUT_TIMERS,
-        RECOGNIZER_STOP,
-        RECOGNIZER_START_PHRASE_ENROLLMENT,
-        RECOGNIZER_ENROLLMENT_ROLLBACK,
-        RECOGNIZER_END_PHRASE_ENROLLMENT,
-        RECOGNIZER_MODIFY_PHRASE,
-        RECOGNIZER_DELETE_PHRASE,
-
         GENERIC_HEADER_ACTIVE_REQUEST_ID_LIST,
 	    GENERIC_HEADER_PROXY_SYNC_ID,
 	    GENERIC_HEADER_ACCEPT_CHARSET,
@@ -96,6 +82,52 @@ namespace ucf
 	    FIRST_LINE_request_state,
     }
 
+    public enum MrcpMsgType:int
+    {
+	    MRCP_MESSAGE_TYPE_UNKNOWN,
+	    MRCP_MESSAGE_TYPE_REQUEST,
+	    MRCP_MESSAGE_TYPE_RESPONSE,
+	    MRCP_MESSAGE_TYPE_EVENT
+    }
+
+    public enum MrcpReqState : int
+    {
+	    MRCP_REQUEST_STATE_COMPLETE,
+	    MRCP_REQUEST_STATE_INPROGRESS,
+	    MRCP_REQUEST_STATE_PENDING,
+	    MRCP_REQUEST_STATE_COUNT,
+	    MRCP_REQUEST_STATE_UNKNOWN = MRCP_REQUEST_STATE_COUNT
+    }
+
+    public enum MrcpMethod : int
+    {
+	    RECOGNIZER_SET_PARAMS,
+	    RECOGNIZER_GET_PARAMS,
+	    RECOGNIZER_DEFINE_GRAMMAR,
+	    RECOGNIZER_RECOGNIZE,
+	    RECOGNIZER_INTERPRET,
+	    RECOGNIZER_GET_RESULT,
+	    RECOGNIZER_START_INPUT_TIMERS,
+	    RECOGNIZER_STOP,
+	    RECOGNIZER_START_PHRASE_ENROLLMENT,
+	    RECOGNIZER_ENROLLMENT_ROLLBACK,
+	    RECOGNIZER_END_PHRASE_ENROLLMENT,
+	    RECOGNIZER_MODIFY_PHRASE,
+	    RECOGNIZER_DELETE_PHRASE,
+
+	    RECOGNIZER_METHOD_COUNT
+    }
+
+    /** MRCP recognizer events */
+    public enum MrcpEvent : int
+    {
+	    RECOGNIZER_START_OF_INPUT,
+	    RECOGNIZER_RECOGNITION_COMPLETE,
+	    RECOGNIZER_INTERPRETATION_COMPLETE,
+        RECOGNIZER_RECOGNITION_INTERMEDIA_RESULT,
+	    RECOGNIZER_EVENT_COUNT
+    }
+
     public interface IMrcpMessage
     {        
         IMrcpMessage SetHearder(int type, string content);
@@ -111,6 +143,7 @@ namespace ucf
         void SendMessage(IMrcpMessage msg);        
         string GetChannelId();
         IMrcpChannelMgr GetMgr();
+        void SendRemoveChannel();
     }
 
     public interface IMrcpChannelMgr

@@ -17,23 +17,24 @@ namespace PluginsMgr
 {
     public static class MainRunner
     {
+        static int _tcaseindex = 0;
         static ITestApp _app;
         static volatile bool _quit = false;
         static IMrcpChannelMgr _channelMgr;
-        static CodeDomProvider _engine = CSharpCodeProvider.CreateProvider("csharp");        
+        static CodeDomProvider _engine = CSharpCodeProvider.CreateProvider("csharp");
 
         public static void Quit()
         {
-            _quit = true;            
+            _quit = true;
         }
 
         public static ITestApp Init(IMrcpChannelMgr mgr, Object param)
         {
-            _channelMgr = mgr;            
+            _channelMgr = mgr;
             string appSrc = param as string;
             _app = LoadTestApp(appSrc);
             return _app;
-        }        
+        }
 
         static Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
         static MainRunner()
@@ -52,7 +53,7 @@ namespace PluginsMgr
 
         private static ITestApp LoadTestApp(string appSrc)
         {
-            ITestApp app = null;            
+            ITestApp app = null;
             CompilerParameters opts = new CompilerParameters();
             opts.GenerateExecutable = false;
             opts.GenerateInMemory = true;
@@ -104,6 +105,7 @@ namespace PluginsMgr
                         tc.OnPostCmdRun();
                         return false;
                     }
+                    tc.SetRunningState();
                     tc.OnPostCmdRun();
                 }
                 //TODO:: wait with locker
@@ -114,15 +116,24 @@ namespace PluginsMgr
 
         private static ITestCase GetNextReadyCase()
         {
-            foreach (ITestCase tcase in _app.Cases)
+            try
             {
+                if (_tcaseindex >= _app.Cases.Length)
+                    return null;
+                ITestCase tcase = _app.Cases[_tcaseindex];
                 tcase.OnCreate(_app);
                 if (tcase.OnCondition())
                 {
+                    _tcaseindex++;
                     return tcase;
                 }
+                return null;
             }
-            return null;
+            catch (IndexOutOfRangeException ex)
+            {
+                return null;
+            }
+            
         }
     }
     public interface ICmdRunner

@@ -11,7 +11,21 @@ namespace ucf
     {
         string _name;
         Logger _logger;
-        ITestApp _app;
+        public ITestApp _app;
+        bool    _streaming;
+        volatile bool _state;
+
+        public virtual bool Streaming
+        {
+            get { return _streaming;  }
+            set { _streaming = value; }
+        }
+
+        public virtual bool State
+        {
+            get { return _state; }
+            set { _state = value; }
+        }
 
         public virtual string Name
         {
@@ -106,14 +120,14 @@ namespace ucf
         }
 
 
-        public string Cmd
+        public virtual string Cmd
         {
             get { return ""; }
         }
 
         public bool OnCondition()
-        {
-            if (_app.ChannelMgr.Count() < 5)
+        { 
+            if (!_app.CaseLimit())
             {
                 return true;
             }
@@ -130,29 +144,35 @@ namespace ucf
             i("OnPostCmdRun()");
         }
 
-        public void OnChannelAdd(IMrcpChannel channel)
+        public virtual void OnChannelAdd(IMrcpChannel channel)
         {
             i(String.Format("OnChannelAdd({0})", channel));
         }
 
-        public void OnChannelRemove(IMrcpChannel channel)
+        public virtual void OnChannelRemove(IMrcpChannel channel)
         {
             i(String.Format("OnChannelRemove({0})", channel));
         }
 
-        public void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg)
+        public virtual void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg)
         {
             i(String.Format("OnMessageRecive({0})", channel));
         }
 
-        public byte[] OnStreamRead(IMrcpChannel channel, int size)
+        public virtual byte[] OnStreamRead(IMrcpChannel channel, int size,out int read)
         {
+            read = 0;
             return new byte[0];
         }
 
-        public void OnStreamOut(IMrcpChannel channel)
+        public virtual void OnStreamOut(IMrcpChannel channel)
         {
             i(String.Format("OnStreamOut({0})", channel));
+        }
+
+        public virtual void SetRunningState()
+        {
+            State = true;
         }
     }
 }
