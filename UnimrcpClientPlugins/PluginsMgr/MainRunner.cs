@@ -119,7 +119,10 @@ namespace PluginsMgr
             try
             {
                 if (_tcaseindex >= _app.Cases.Length)
+                {
+                    _tcaseindex = 0;
                     return null;
+                }
                 ITestCase tcase = _app.Cases[_tcaseindex];
                 tcase.OnCreate(_app);
                 if (tcase.OnCondition())

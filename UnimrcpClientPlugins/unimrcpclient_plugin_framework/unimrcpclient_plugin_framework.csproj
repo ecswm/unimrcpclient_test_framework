@@ -40,6 +40,7 @@
   <ItemGroup>
     <Compile Include="BaseApp.cs" />
     <Compile Include="BaseCase.cs" />
+    <Compile Include="BaseFactory.cs" />
     <Compile Include="IMrcpChannel.cs" />
     <Compile Include="ITestApp.cs" />
     <Compile Include="Logger.cs" />

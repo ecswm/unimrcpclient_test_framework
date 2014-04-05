@@ -135,7 +135,7 @@ namespace Tests
                     if (_mrcpreqstate == (int)MrcpReqState.MRCP_REQUEST_STATE_COMPLETE)
                     {
                         d("channel id: " + channel.GetChannelId() + " current channel recv mrcp_request_state_complete for recog stop");
-                        State = false;
+                        channel.SendRemoveChannel();
                     }
                 }
             }
@@ -167,7 +167,10 @@ namespace Tests
         {
             Streaming = false;
             if (_open)
+            {
+                _open = false;
                 _file.Close();
+            }
             //set timer to check last result            
             StartTimer();
         }
@@ -280,8 +283,8 @@ namespace Tests
                 int index = 0;
                 if (tcases == null)
                 {
-                    tcases = new HWCcontinuousTestCase[20];
-                    while (index < 20)
+                    tcases = new HWCcontinuousTestCase[40];
+                    while (index < 40)
                     {
                         StreamWriter logStream = new StreamWriter("HW_TEST"+Convert.ToString(index),false);
                         tcases[index] = new HWCcontinuousTestCase("HW_TEST" + Convert.ToString(index), logStream);
@@ -303,7 +306,7 @@ namespace Tests
                     _iRunning++;
             }
             d("iRunning count: " + Convert.ToString(_iRunning));
-            return _iRunning >= 19 ? true : false;
+            return _iRunning >= 20 ? true : false;
         }
     }
 }

@@ -32,7 +32,6 @@ namespace ucf
         void OnCreate(IMrcpChannelMgr mgr);
         void OnDestory();        
     }
-
     public interface ITestCase : ILog
     {
         bool Streaming { get; }
@@ -71,5 +70,19 @@ namespace ucf
         void OnCreate(ITestApp app);
         void OnDestory();
         void SetRunningState();
+    }
+    public interface ITestCaseFactory
+    {
+        //case Count
+        int CaseCount {  set; }
+        //
+    }
+
+    public enum HWCaseType { single = 0, continuous = 1 };
+    public interface IHWCaseFactory : ITestCaseFactory
+    {
+        String FilePath { set; }
+        String Grxml {  set; }
+        ITestCase[] CreateHWCase(HWCaseType type);
     }
 }
