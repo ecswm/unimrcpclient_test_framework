@@ -264,9 +264,40 @@ namespace Tests
   
     }
 
+    public class HWSingleTestFactory : HWBaseFactory
+    {
+        public HWSingleTestFactory(String filepath, String grxml, int casecount)
+            : base(filepath, grxml, casecount)
+        {
+
+        }
+
+        public override ITestCase[] CreateHWCase()
+        {
+            string[] files = GetCaseFileName();
+            if (files.Length > 0)
+            {
+                HWSingleTestCase[] tcases = new HWSingleTestCase[files.Length];
+                int caseindex = 0;
+                string casename = "HWTEST";
+                foreach (string file in files)
+                {
+                    StreamWriter logStream = new StreamWriter(casename +  Convert.ToString(caseindex));
+                    tcases[caseindex] = new HWSingleTestCase(casename + Convert.ToString(caseindex), logStream);
+                    tcases[caseindex].filename = file;
+                    tcases[caseindex].grxml = Grxml;
+                    caseindex++;
+                }
+                return tcases;
+            }
+            return null;
+        }
+        
+    }
+
     public class TestApp : BaseApp
     {
-        static HWTestCase[] tcases;
+        static ITestCase[] tcases;
         static TextWriter LOG_TW;
         static TestApp(){
             LOG_TW = new StreamWriter(new FileStream("testapp.log", FileMode.Create, FileAccess.Write));
@@ -280,6 +311,7 @@ namespace Tests
         {
             get
             {
+                /*
                 int index = 0;
                 if (tcases == null)
                 {
@@ -294,6 +326,14 @@ namespace Tests
                     }  
                 }
                 return tcases;
+                 */
+                if (tcases == null)
+                {
+                    HWSingleTestFactory casefactory = new HWSingleTestFactory("D:\\liukaijin\\16bit8k", "http://192.168.5.72:8080/asr_gram/qw_lx.grxml", 20);
+                    tcases = casefactory.CreateHWCase();
+                }
+                return tcases;
+
             }
          }
 

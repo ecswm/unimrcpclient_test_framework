@@ -83,6 +83,7 @@ namespace ucf
     {
         String FilePath { set; }
         String Grxml {  set; }
-        ITestCase[] CreateHWCase(HWCaseType type);
+        String[] GetCaseFileName();
+        ITestCase[] CreateHWCase();
     }
 }
