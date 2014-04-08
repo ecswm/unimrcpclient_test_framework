@@ -27,8 +27,12 @@ namespace ucf
     {
         String Name { get; }
         ITestCase[] Cases { get; }
+        ITestCase Case { get; }
         IMrcpChannelMgr ChannelMgr { get; }
         bool CaseLimit();
+        void IncreaseCaseCount();
+        void DecreaseCaseCount();
+        bool IsRuningCaseLimit();
         void OnCreate(IMrcpChannelMgr mgr);
         void OnDestory();        
     }

@@ -29,12 +29,35 @@ namespace ucf
 
         public virtual ITestCase[] Cases
         {
-            get { return new ITestCase[0]; }
+            get { return new ITestCase[1]; }
+        }
+
+        public virtual ITestCase Case
+        {
+            get 
+            {
+                return null;
+            }
         }
 
         public virtual bool CaseLimit()
         {
             return true;
+        }
+
+        public virtual bool IsRuningCaseLimit()
+        {
+            return true;
+        }
+
+        public virtual void IncreaseCaseCount()
+        {
+
+        }
+
+        public virtual void DecreaseCaseCount()
+        {
+
         }
 
         public virtual void OnCreate(IMrcpChannelMgr mgr)

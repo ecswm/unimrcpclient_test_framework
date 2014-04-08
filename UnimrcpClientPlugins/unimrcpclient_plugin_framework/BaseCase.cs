@@ -126,8 +126,8 @@ namespace ucf
         }
 
         public bool OnCondition()
-        { 
-            if (!_app.CaseLimit())
+        {
+            if (!_app.IsRuningCaseLimit())
             {
                 return true;
             }
@@ -173,6 +173,7 @@ namespace ucf
         public virtual void SetRunningState()
         {
             State = true;
+            _app.IncreaseCaseCount();
         }
     }
 }

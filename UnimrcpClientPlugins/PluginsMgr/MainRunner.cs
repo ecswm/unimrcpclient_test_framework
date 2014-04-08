@@ -17,7 +17,6 @@ namespace PluginsMgr
 {
     public static class MainRunner
     {
-        static int _tcaseindex = 0;
         static ITestApp _app;
         static volatile bool _quit = false;
         static IMrcpChannelMgr _channelMgr;
@@ -105,7 +104,6 @@ namespace PluginsMgr
                         tc.OnPostCmdRun();
                         return false;
                     }
-                    tc.SetRunningState();
                     tc.OnPostCmdRun();
                 }
                 //TODO:: wait with locker
@@ -116,6 +114,16 @@ namespace PluginsMgr
 
         private static ITestCase GetNextReadyCase()
         {
+            ITestCase tcase =  _app.Case;
+            if(tcase!=null)
+            {
+                tcase.OnCreate(_app);
+                _app.IncreaseCaseCount();
+                return tcase;
+            }
+            return null;
+           
+            /*
             try
             {
                 if (_tcaseindex >= _app.Cases.Length)
@@ -137,6 +145,7 @@ namespace PluginsMgr
                 return null;
             }
             
+            */
         }
     }
     public interface ICmdRunner

@@ -5,6 +5,7 @@ using System.Text;
 using System.Timers;
 using ucf;
 using System.IO;
+using System.Configuration;
 
 namespace Tests
 {
@@ -74,7 +75,7 @@ namespace Tests
         //create stop message and send to server
         public void SendStopChannel(IMrcpChannel channel)
         {
-            d("send stopmsg");
+            d("send stopchannel msg");
             _mrcp = channel;
             IMrcpMessage msg = _mrcp.CreateMessage((int)MrcpMethod.RECOGNIZER_STOP);
             _mrcp.SendMessage(msg);
@@ -82,7 +83,6 @@ namespace Tests
 
         public override void OnChannelAdd(IMrcpChannel channel)
         {
-            State = true;
             d("current global channel count:" + _app.ChannelMgr.Count());
             d("current channel-id:" + channel.GetChannelId());
             _mrcp = channel;
@@ -104,6 +104,7 @@ namespace Tests
         public override void OnChannelRemove(IMrcpChannel channel)
         {
             State = false;
+            _app.DecreaseCaseCount();
         }
 
         public override void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg)
@@ -119,7 +120,7 @@ namespace Tests
                 {
                     if (_mrcpreqstate == (int)MrcpReqState.MRCP_REQUEST_STATE_INPROGRESS)
                     {
-                        //TODO Set Streaming To True
+                        //Set Streaming To True
                         d("channel id: " + channel.GetChannelId() + " recv mrcp_request_state_inprogress");
                         Streaming = true;
                     }
@@ -266,10 +267,37 @@ namespace Tests
 
     public class HWSingleTestFactory : HWBaseFactory
     {
-        public HWSingleTestFactory(String filepath, String grxml, int casecount)
+        private static HWSingleTestFactory instance = null;
+        private static Int32 curcaseindex = 0;
+        private static Int32 casecount = 0;
+
+        private HWSingleTestFactory(String filepath, String grxml, Int32 casecount)
             : base(filepath, grxml, casecount)
         {
+            
+        }
 
+        public static HWSingleTestFactory GetInstance(String filepath,String grxml,Int32 casecount)
+        {
+            if (instance == null)
+            {
+                return new HWSingleTestFactory(filepath, grxml, casecount);
+            }
+            return instance;
+        }
+
+        public virtual ITestCase GetNextCase()
+        {
+            if (curcaseindex == Files.Length)
+               curcaseindex = 0;
+            String casename = "HW_TEST"+Convert.ToString(casecount);
+            StreamWriter logStream = new StreamWriter("HW_TEST" + Convert.ToString(casecount), false);
+            HWSingleTestCase tcase = new HWSingleTestCase(casename, logStream);
+            tcase.filename = Files[curcaseindex];
+            tcase.grxml = Grxml;
+            curcaseindex++;
+            casecount++;
+            return tcase;
         }
 
         public override ITestCase[] CreateHWCase()
@@ -297,56 +325,63 @@ namespace Tests
 
     public class TestApp : BaseApp
     {
-        static ITestCase[] tcases;
+        static String pbx;
+        static String filelist;
+        static String grxml;
+        static String testmode;
+        static Int32 maxruncase = 20;
+        static volatile int runingcasecount;
         static TextWriter LOG_TW;
+        static Dictionary<string, object> config;
+
         static TestApp(){
             LOG_TW = new StreamWriter(new FileStream("testapp.log", FileMode.Create, FileAccess.Write));
+            config = new Dictionary<string, object>();
+            config["pbx"] = "HUAWEI";
+            config["mode"] = "single";
+            config["filelist"] = @"D:\liukaijin_70\config-asr\70.list";
+            config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_dc.grxml";
+            config["maxruncase"] = 20;
         }
+
         public TestApp():base(LOG_TW)
         {
-
+          
         }
 
-        public override ITestCase[] Cases
+
+        public override ITestCase Case
         {
             get
             {
-                /*
-                int index = 0;
-                if (tcases == null)
+                if (config["mode"].Equals("single"))
                 {
-                    tcases = new HWCcontinuousTestCase[40];
-                    while (index < 40)
-                    {
-                        StreamWriter logStream = new StreamWriter("HW_TEST"+Convert.ToString(index),false);
-                        tcases[index] = new HWCcontinuousTestCase("HW_TEST" + Convert.ToString(index), logStream);
-                        tcases[index].filename = "D:\\liukaijin\\16bit8k//1946076.wav";
-                        tcases[index].grxml = "http://192.168.5.72:8080/asr_gram/qw_lx.grxml";
-                        index++;
-                    }  
+                    if(!IsRuningCaseLimit())
+                        return HWSingleTestFactory.GetInstance(config["filelist"].ToString(), config["grxml"].ToString(), 20).GetNextCase();
                 }
-                return tcases;
-                 */
-                if (tcases == null)
-                {
-                    HWSingleTestFactory casefactory = new HWSingleTestFactory("D:\\liukaijin\\16bit8k", "http://192.168.5.72:8080/asr_gram/qw_lx.grxml", 20);
-                    tcases = casefactory.CreateHWCase();
-                }
-                return tcases;
-
+                return null;
             }
-         }
+           
+        }
 
-        public override bool CaseLimit()
+        public int RunningCaseCount
         {
-            int _iRunning = 0;
-            foreach(ITestCase tcase in tcases)
-            {
-                if (tcase.State == true)
-                    _iRunning++;
-            }
-            d("iRunning count: " + Convert.ToString(_iRunning));
-            return _iRunning >= 20 ? true : false;
+            get { return runingcasecount; }
+        }
+        
+        public override void IncreaseCaseCount()
+        {
+            runingcasecount += 1;
+        }
+
+        public override void DecreaseCaseCount()
+        {
+            runingcasecount -= 1;
+        }
+
+        public override  bool IsRuningCaseLimit()
+        {
+            return runingcasecount >= Convert.ToInt32(config["maxruncase"].ToString()) ? true : false;
         }
     }
 }

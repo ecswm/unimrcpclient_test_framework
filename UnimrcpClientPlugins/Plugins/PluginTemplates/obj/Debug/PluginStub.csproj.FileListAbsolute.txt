@@ -16,3 +16,4 @@ E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\Plugi
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\Plugins\PluginTemplates\bin\Debug\unimrcpclient_plugin_framework.pdb
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\Plugins\PluginTemplates\obj\Debug\PluginTemplates.dll
 E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\Plugins\PluginTemplates\obj\Debug\PluginTemplates.pdb
+E:\project\mrcp\unimrcp-1.1.0\unimrcp-1.1.0\platforms\UnimrcpClientPlugins\Plugins\PluginTemplates\bin\Debug\PluginTemplates.dll.config
