@@ -116,6 +116,7 @@ ucf::IMrcpMessage^ MrcpMessage::SetBody(String^ content){
 String^ MrcpMessage::GetHeader(int type){
 
 	mrcp_generic_header_t *generic_header = mrcp_generic_header_prepare(mMessage);
+	mrcp_recog_header_t *recog_header = (mrcp_recog_header_t*)mrcp_resource_header_prepare(mMessage);
 
 	switch(type){
 	case MrcpConst::GENERIC_HEADER_CONTENT_TYPE:
@@ -125,6 +126,8 @@ String^ MrcpMessage::GetHeader(int type){
 		return getCLRS2(&generic_header->content_id);		
 	case MrcpConst::GENERIC_HEADER_CHANNEL_ID:
 		return getCLRS2(&mMessage->channel_id.session_id) + "@" + getCLRS2(&mMessage->channel_id.resource_name);
+	case MrcpConst::RECOGNIZER_HEADER_COMPLETION_CAUSE:
+		return getCLRS2((apt_str_t *)mrcp_recog_completion_cause_get(recog_header->completion_cause,MRCP_VERSION_2));
 	}	
 	
 	return nullptr;

@@ -1,28 +1,42 @@
-﻿#define debug
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Timers;
-using ucf;
 using System.IO;
-using System.Configuration;
+using ucf;
 
-namespace Tests_Total
+namespace ucf
 {
+
+    public enum HWCaseResult : int
+    {
+        KEYWORD_DC_NORMAL,
+        KEYWORD_DC_EXCEPTION,
+        KEYWORD_DC_TIMEOUT,
+        KEYWORD_LX_NORMAL,
+        KEYWORD_LX_EXCEPTION,
+        KEYWORD_LX_TIMEOUT,
+        QW_DC_NORMAL,
+        QW_DC_EXCEPTION,
+        QW_DC_TIMEOUT,
+        QW_LX_NORMAL,
+        QW_LX_EXCEPTION,
+        QW_LX_TIMEOUT
+    }
 
     public class HWTestCase : BaseCase
     {
         public IMrcpChannel _mrcp;
         public Timer _stoptimer;
-        
+        public HWCaseResult _caseresult;
+
         String _filename;
         String _grxml;
         volatile Boolean _resultflag;
         FileStream _file;
         volatile Boolean _open;
-        
+
         public String filename
         {
             get { return _filename; }
@@ -38,7 +52,13 @@ namespace Tests_Total
         public Boolean resultflag
         {
             get { return _resultflag; }
-            set { _resultflag = value;}
+            set { _resultflag = value; }
+        }
+
+        public HWCaseResult caseresult
+        {
+            get { return _caseresult; }
+            set { _caseresult = value; }
         }
 
         public HWTestCase(String name)
@@ -70,9 +90,9 @@ namespace Tests_Total
             get { return "run recog"; }
         }
 
-        public virtual void ProcessRecognizeResult(IMrcpChannel channel, IMrcpMessage msg) 
+        public virtual void ProcessRecognizeResult(IMrcpChannel channel, IMrcpMessage msg)
         {
-
+            ParseNLResult(msg);
         }
 
         //create stop message and send to server
@@ -106,17 +126,23 @@ namespace Tests_Total
 
         public override void OnChannelRemove(IMrcpChannel channel)
         {
-            //OnDestory();
+
+        }
+
+        public override void OnDestory()
+        {
+            base.OnDestory();
             State = false;
             _app.DecreaseCaseCount();
+            _app.i(String.Format("Case {0} result: is {1}",Name,caseresult.ToString("G")));    
         }
 
         public override void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg)
         {
-            Dictionary<Int32, Object> ret  = msg.GetFirstLine();
+            Dictionary<Int32, Object> ret = msg.GetFirstLine();
             int _mrcptype = Convert.ToInt32(ret[(int)MrcpConst.FIRST_LINE_type]);
             int _mrcpmethod = Convert.ToInt32(ret[(int)MrcpConst.FIRST_LINE_method_id]);
-            int _mrcpreqstate =Convert.ToInt32(ret[(int)MrcpConst.FIRST_LINE_request_state]);
+            int _mrcpreqstate = Convert.ToInt32(ret[(int)MrcpConst.FIRST_LINE_request_state]);
 
             if (_mrcptype == (int)MrcpMsgType.MRCP_MESSAGE_TYPE_RESPONSE)
             {
@@ -133,6 +159,7 @@ namespace Tests_Total
                         d("channel id: " + channel.GetChannelId() + " current channel recv unexpect response");
                         //Send Remove channel msg
                         channel.SendRemoveChannel();
+                       
                     }
                 }
                 else if (_mrcpmethod == (int)MrcpMethod.RECOGNIZER_STOP)
@@ -150,15 +177,15 @@ namespace Tests_Total
                 {
                     d("channel id: " + channel.GetChannelId() + " recv recognizer_start_of_input");
                 }
-                else if (_mrcpmethod == (int)MrcpEvent.RECOGNIZER_RECOGNITION_INTERMEDIA_RESULT||
+                else if (_mrcpmethod == (int)MrcpEvent.RECOGNIZER_RECOGNITION_INTERMEDIA_RESULT ||
                     _mrcpmethod == (int)MrcpEvent.RECOGNIZER_RECOGNITION_COMPLETE)
-                {      
+                {
                     ProcessRecognizeResult(channel, msg);
                 }
             }
         }
 
-        public override byte[] OnStreamRead(IMrcpChannel channel, int size,out int read)
+        public override byte[] OnStreamRead(IMrcpChannel channel, int size, out int read)
         {
             byte[] buffer = new byte[size];
             if (!_open)
@@ -184,10 +211,10 @@ namespace Tests_Total
         {
             lock (_stoptimer)
             {
-               if (!_stoptimer.Enabled)
-               {
-                   _stoptimer.Start();
-               }
+                if (!_stoptimer.Enabled)
+                {
+                    _stoptimer.Start();
+                }
             }
         }
 
@@ -196,197 +223,27 @@ namespace Tests_Total
             d(msg.GetBody());
         }
 
+        //public virtual void OnE
         public virtual void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             lock (_stoptimer)
             {
                 //RECOGNIZER_RECOGNITION_COMPLETE result
-                if (resultflag)
-                {
-                    //send stop message
-                    SendStopChannel(_mrcp);
-                    var timer = (Timer)sender;
-                    timer.Stop();
-                }
-                else
+                if (!resultflag)
                 {
                     //Timeout log
-                    d("channle id :" + _mrcp.GetChannelId() + " timeout!!!");
+                    String channelid = _mrcp.GetChannelId();
+                    string filename = string.Format("{0}timeout/{1}_{2}", AppDomain.CurrentDomain.BaseDirectory, channelid, Name);
+                    caseresult = HWCaseResult.KEYWORD_DC_TIMEOUT;
+                    StreamWriter timeoutwriter = new StreamWriter(filename);
+                    
+                    timeoutwriter.Write("channle id :" + channelid + " timeout!!!");
+                    timeoutwriter.Close();
                 }
+                SendStopChannel(_mrcp);
+                var timer = (Timer)sender;
+                timer.Stop();
             }
         }
     }
-
-    public class HWSingleTestCase : HWTestCase
-    {
-
-        public HWSingleTestCase(String name):base(name)
-        {
-
-        }
-
-        public HWSingleTestCase(String name, StreamWriter logStream) : base(name,logStream)
-        {
-
-        }
-
-        public override void ProcessRecognizeResult(IMrcpChannel channel,IMrcpMessage msg)
-        {
-            d("channel id: " + channel.GetChannelId() + " recv recognizer_recognition_complete");
-            ParseNLResult(msg);
-            resultflag = true;
-        }             
-    }
-
-    public class HWCcontinuousTestCase : HWTestCase
-    {
-        public HWCcontinuousTestCase(String name)
-            : base(name)
-        {
-      
-        }
-
-        public HWCcontinuousTestCase(String name, StreamWriter logStream)
-            : base(name, logStream)
-        {
-
-        }
-
-        public override void ProcessRecognizeResult(IMrcpChannel channel,IMrcpMessage msg)
-        {
-            d("channel id: " + channel.GetChannelId() + " recv recongizer_intermedia_result");
-            ParseNLResult(msg);
-            resultflag = true;
-            lock (_stoptimer)
-            {
-                if (_stoptimer.Enabled)
-                {
-                    _stoptimer.Stop();
-                    _stoptimer.Start();
-                }
-            }
-        }
-  
-    }
-
-    public class HWSingleTestFactory : HWBaseFactory
-    {
-        private static HWSingleTestFactory instance = null;
-        private static Int32 curcaseindex = 0;
-        private static Int32 casecount = 0;
-
-        private HWSingleTestFactory(String filepath, String grxml, Int32 casecount)
-            : base(filepath, grxml, casecount)
-        {
-            
-        }
-
-        public static HWSingleTestFactory GetInstance(String filepath,String grxml,Int32 casecount)
-        {
-            if (instance == null)
-            {
-                return new HWSingleTestFactory(filepath, grxml, casecount);
-            }
-            return instance;
-        }
-
-        public virtual ITestCase GetNextCase()
-        {
-            if (curcaseindex == Files.Length)
-               curcaseindex = 0;
-            String casename = "HW_TEST"+Convert.ToString(casecount);
-            StreamWriter logStream = new StreamWriter("HW_TEST" + Convert.ToString(casecount), false);
-            HWSingleTestCase tcase = new HWSingleTestCase(casename, logStream);
-            tcase.filename = Files[curcaseindex];
-            tcase.grxml = Grxml;
-            curcaseindex++;
-            casecount++;
-            return tcase;
-        }
-
-        public override ITestCase[] CreateHWCase()
-        {
-            string[] files = GetCaseFileName();
-            if (files.Length > 0)
-            {
-                HWSingleTestCase[] tcases = new HWSingleTestCase[files.Length];
-                int caseindex = 0;
-                string casename = "HWTEST";
-                foreach (string file in files)
-                {
-                    StreamWriter logStream = new StreamWriter(casename +  Convert.ToString(caseindex));
-                    tcases[caseindex] = new HWSingleTestCase(casename + Convert.ToString(caseindex), logStream);
-                    tcases[caseindex].filename = file;
-                    tcases[caseindex].grxml = Grxml;
-                    caseindex++;
-                }
-                return tcases;
-            }
-            return null;
-        }
-        
-    }
-
-    public class TestApp : BaseApp
-    {
-        static String pbx;
-        static String filelist;
-        static String grxml;
-        static String testmode;
-        static Int32 maxruncase = 20;
-        static volatile int runingcasecount;
-        static TextWriter LOG_TW;
-        static Dictionary<string, object> config;
-
-        static TestApp(){
-            LOG_TW = new StreamWriter(new FileStream("testapp.log", FileMode.Create, FileAccess.Write));
-            config = new Dictionary<string, object>();
-            config["pbx"] = "HUAWEI";
-            config["mode"] = "single";
-            config["filelist"] = @"D:\liukaijin_70\config-asr\70.list";
-            config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_dc.grxml";
-            config["maxruncase"] = 20;
-        }
-
-        public TestApp():base(LOG_TW)
-        {
-          
-        }
-
-
-        public override ITestCase Case
-        {
-            get
-            {
-                if (config["mode"].Equals("single"))
-                {
-                    if(!IsRuningCaseLimit())
-                        return HWSingleTestFactory.GetInstance(config["filelist"].ToString(), config["grxml"].ToString(), 20).GetNextCase();
-                }
-                return null;
-            }
-           
-        }
-
-        public int RunningCaseCount
-        {
-            get { return runingcasecount; }
-        }
-        
-        public override void IncreaseCaseCount()
-        {
-            runingcasecount += 1;
-        }
-
-        public override void DecreaseCaseCount()
-        {
-            runingcasecount -= 1;
-        }
-
-        public override  bool IsRuningCaseLimit()
-        {
-            return runingcasecount >= Convert.ToInt32(config["maxruncase"].ToString()) ? true : false;
-        }
-    }
-
 }

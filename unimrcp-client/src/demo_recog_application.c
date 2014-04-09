@@ -245,6 +245,7 @@ static apt_bool_t recog_application_on_session_terminate(mrcp_application_t *app
 	/* received response to session termination request,
 	now it's safe to destroy no more referenced session */
 	mrcp_application_session_destroy(session);
+	clrS->OnDestory();
 	return TRUE;
 }
 

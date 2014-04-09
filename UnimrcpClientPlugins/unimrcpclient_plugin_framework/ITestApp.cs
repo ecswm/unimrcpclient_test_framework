@@ -29,6 +29,7 @@ namespace ucf
         ITestCase[] Cases { get; }
         ITestCase Case { get; }
         IMrcpChannelMgr ChannelMgr { get; }
+        Int32 CurCaseCount { get; }
         bool CaseLimit();
         void IncreaseCaseCount();
         void DecreaseCaseCount();

@@ -45,6 +45,7 @@ namespace ucf
         public BaseCase(string name, StreamWriter logStream)
         {
             _logger = new Logger(name, logStream);
+            _name = name;
         }
 
         public virtual void OnCreate(ITestApp app)

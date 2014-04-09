@@ -30,12 +30,12 @@ namespace PluginsMgr
         public static ITestApp Init(IMrcpChannelMgr mgr, Object param)
         {
             _channelMgr = mgr;
-            string appSrc = param as string;
+            String appSrc = param as String;
             _app = LoadTestApp(appSrc);
             return _app;
         }
 
-        static Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
+        static Dictionary<String, Assembly> assemblies = new Dictionary<String, Assembly>();
         static MainRunner()
         {
             AppDomain.CurrentDomain.AssemblyLoad += (sender, e) =>
@@ -50,7 +50,7 @@ namespace PluginsMgr
             };
         }
 
-        private static ITestApp LoadTestApp(string appSrc)
+        private static ITestApp LoadTestApp(String appSrc)
         {
             ITestApp app = null;
             CompilerParameters opts = new CompilerParameters();
@@ -62,7 +62,8 @@ namespace PluginsMgr
                 .Where(a => !a.IsDynamic)
                 .Select(a => a.Location)
                 .ToList().ForEach(l => opts.ReferencedAssemblies.Add(l));
-            CompilerResults results = _engine.CompileAssemblyFromFile(opts, new string[] { appSrc });
+            String[] appParams = appSrc.Split('|');
+            CompilerResults results = _engine.CompileAssemblyFromFile(opts, new String[] { appParams[0] });
             if (results.Errors.Count > 0)
             {
                 foreach (CompilerError err in results.Errors)
@@ -79,8 +80,14 @@ namespace PluginsMgr
                 Assembly asb = results.CompiledAssembly;
                 try
                 {
-                    app = asb.CreateInstance("Tests.TestApp") as ITestApp;
-                    //app = new PluginTemplates.TestApp();
+                    if (appParams.Length == 2)
+                    {
+                        app = asb.CreateInstance(appParams[1]) as ITestApp;
+                    }
+                    else
+                    {
+                        app = asb.CreateInstance("Tests.TestApp") as ITestApp;
+                    }
                 }
                 catch (Exception exp)
                 {
@@ -109,6 +116,11 @@ namespace PluginsMgr
                 //TODO:: wait with locker
                 Thread.Sleep(100);
             }
+          /*while (_app.CurCaseCount != 0)
+            {
+                Thread.Sleep(100);
+            }
+           */
             return false;
         }
 
@@ -122,30 +134,6 @@ namespace PluginsMgr
                 return tcase;
             }
             return null;
-           
-            /*
-            try
-            {
-                if (_tcaseindex >= _app.Cases.Length)
-                {
-                    _tcaseindex = 0;
-                    return null;
-                }
-                ITestCase tcase = _app.Cases[_tcaseindex];
-                tcase.OnCreate(_app);
-                if (tcase.OnCondition())
-                {
-                    _tcaseindex++;
-                    return tcase;
-                }
-                return null;
-            }
-            catch (IndexOutOfRangeException ex)
-            {
-                return null;
-            }
-            
-            */
         }
     }
     public interface ICmdRunner

@@ -10,7 +10,8 @@ namespace ucf
 {
     public class BaseApp : ITestApp
     {
-        string _name;
+        String _name;
+        static volatile int runingcasecount = 0;
         IMrcpChannelMgr _channelMgr;
         Logger _logger;
         public BaseApp(){
@@ -45,6 +46,11 @@ namespace ucf
             return true;
         }
 
+        public virtual Int32 CurCaseCount
+        {
+            get { return runingcasecount; }
+        }
+
         public virtual bool IsRuningCaseLimit()
         {
             return true;
@@ -52,12 +58,12 @@ namespace ucf
 
         public virtual void IncreaseCaseCount()
         {
-
+            runingcasecount += 1;
         }
 
         public virtual void DecreaseCaseCount()
         {
-
+            runingcasecount -= 1;
         }
 
         public virtual void OnCreate(IMrcpChannelMgr mgr)
