@@ -80,7 +80,6 @@ namespace ucf
         public virtual void OnDestory()
         {
             d(String.Format("OnDestory({0})", _channelMgr.GetHashCode()));
-            _logger.Finish();
         }
 
         public void e(string tag, string msg, Exception e)
