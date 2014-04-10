@@ -42,6 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HWContinuousTestApp.cs" />
+    <Compile Include="HWKEYWORDDCTests.cs" />
+    <Compile Include="HWKEYWORDLXTests.cs" />
+    <Compile Include="HWQWDCTests.cs" />
+    <Compile Include="HWQWLXTests.cs" />
     <Compile Include="HWSingleTestApp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RecogTestApp.cs" />

@@ -241,6 +241,7 @@ static apt_bool_t recog_application_on_session_update(mrcp_application_t *applic
 static apt_bool_t recog_application_on_session_terminate(mrcp_application_t *application, mrcp_session_t *session, mrcp_sig_status_code_e status)
 {
 	ucf::ITestCase^ clrS = getCLRS(System::IntPtr(mrcp_application_session_object_get(session)));
+
 	CLRLOG(clrS, "recog_application_on_session_terminate() %s", status)END(d);
 	/* received response to session termination request,
 	now it's safe to destroy no more referenced session */

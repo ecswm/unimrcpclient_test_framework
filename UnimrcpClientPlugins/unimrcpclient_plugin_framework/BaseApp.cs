@@ -41,11 +41,6 @@ namespace ucf
             }
         }
 
-        public virtual bool CaseLimit()
-        {
-            return true;
-        }
-
         public virtual Int32 CurCaseCount
         {
             get { return runingcasecount; }

@@ -134,7 +134,7 @@ namespace ucf
             base.OnDestory();
             State = false;
             _app.DecreaseCaseCount();
-            _app.i(String.Format("Case {0} result: is {1}",Name,caseresult.ToString("G")));    
+            _app.i(String.Format("Case {0} result: is {1}",Name,caseresult.ToString("G"))); 
         }
 
         public override void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg)
@@ -157,6 +157,7 @@ namespace ucf
                     else
                     {
                         d("channel id: " + channel.GetChannelId() + " current channel recv unexpect response");
+                        NotifyException();
                         //Send Remove channel msg
                         channel.SendRemoveChannel();
                        
@@ -183,6 +184,11 @@ namespace ucf
                     ProcessRecognizeResult(channel, msg);
                 }
             }
+        }
+
+        public virtual void NotifyException()
+        {
+
         }
 
         public override byte[] OnStreamRead(IMrcpChannel channel, int size, out int read)
