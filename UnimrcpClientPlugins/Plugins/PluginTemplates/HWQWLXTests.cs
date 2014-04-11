@@ -39,7 +39,7 @@ namespace HWQWLXTests
 
         public override void ParseNLResult(IMrcpMessage msg)
         {
-            CaseResult += msg.GetBody();
+            //CaseResult += msg.GetBody();
         }
 		
 		public override void _timer_Elapsed(object sender, ElapsedEventArgs e)
