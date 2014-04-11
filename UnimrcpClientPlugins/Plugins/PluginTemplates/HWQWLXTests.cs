@@ -138,7 +138,7 @@ namespace HWQWLXTests
             config["mode"] = "continuous";
             config["filelist"] = @"D:\liukaijin_70\config-asr\70.list";
             config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_lx.grxml";
-            config["maxruncase"] = 20;
+            config["maxruncase"] = 10;
             config["report"] = "./report/report2.log";
 
             totalcaselist = new List<ITestCase>();
