@@ -12,6 +12,7 @@ namespace ucf
     {
         String _name;
         static volatile int runingcasecount = 0;
+        static volatile int totalcasecount = 0;
         IMrcpChannelMgr _channelMgr;
         Logger _logger;
         public BaseApp(){
@@ -46,6 +47,12 @@ namespace ucf
             get { return runingcasecount; }
         }
 
+        public virtual Int32 TotalCaseCount
+        {
+            get { return totalcasecount; }
+            set { totalcasecount = value; }
+        }
+
         public virtual bool IsRuningCaseLimit()
         {
             return true;
@@ -76,6 +83,21 @@ namespace ucf
         {
             d(String.Format("OnDestory({0})", _channelMgr.GetHashCode()));
             _logger.Finish();
+        }
+
+        public virtual void OnCaseFailed(ITestCase tcase,String failmsg)
+        {
+            i(String.Format("OnCaseFailed <{0}>,fail:<{1}>",tcase.Name,failmsg));
+        }
+
+        public virtual void OnCaseSuccess(ITestCase tcase)
+        {
+            i(String.Format("OnCaseSuccess <{0}>", tcase.Name));
+        }
+
+        public virtual void GenerateRepo()
+        {
+
         }
 
         public void e(string tag, string msg, Exception e)

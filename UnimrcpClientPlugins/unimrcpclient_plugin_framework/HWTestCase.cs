@@ -29,7 +29,9 @@ namespace ucf
     {
         public IMrcpChannel _mrcp;
         public Timer _stoptimer;
-        public HWCaseResult _caseresult;
+        
+        DateTime _begintime;
+        TimeSpan _costtime;
 
         String _filename;
         String _grxml;
@@ -53,12 +55,6 @@ namespace ucf
         {
             get { return _resultflag; }
             set { _resultflag = value; }
-        }
-
-        public HWCaseResult caseresult
-        {
-            get { return _caseresult; }
-            set { _caseresult = value; }
         }
 
         public HWTestCase(String name)
@@ -134,7 +130,7 @@ namespace ucf
             base.OnDestory();
             State = false;
             _app.DecreaseCaseCount();
-            _app.i(String.Format("Case {0} result: is {1}",Name,caseresult.ToString("G"))); 
+            _app.i(String.Format("Case {0} result: is {1}",Name,CaseResult)); 
         }
 
         public override void OnMessageReceive(IMrcpChannel channel, IMrcpMessage msg)
@@ -148,28 +144,31 @@ namespace ucf
             {
                 if (_mrcpmethod == (int)MrcpMethod.RECOGNIZER_RECOGNIZE)
                 {
-                    if (_mrcpreqstate == (int)MrcpReqState.MRCP_REQUEST_STATE_INPROGRESS)
+                    try
                     {
-                        //Set Streaming To True
+                        AssertEquals("current channel need recv mrcp_request_state_inprogress response", MrcpReqState.MRCP_REQUEST_STATE_INPROGRESS, (MrcpReqState)_mrcpreqstate);
                         d("channel id: " + channel.GetChannelId() + " recv mrcp_request_state_inprogress");
                         Streaming = true;
                     }
-                    else
+                    catch (CaseFailedException cfe)
                     {
-                        d("channel id: " + channel.GetChannelId() + " current channel recv unexpect response");
-                        NotifyException();
-                        //Send Remove channel msg
-                        channel.SendRemoveChannel();
-                       
+                        _app.OnCaseFailed(this, cfe._msg);
                     }
+                    
                 }
                 else if (_mrcpmethod == (int)MrcpMethod.RECOGNIZER_STOP)
                 {
-                    if (_mrcpreqstate == (int)MrcpReqState.MRCP_REQUEST_STATE_COMPLETE)
+                    try
                     {
-                        d("channel id: " + channel.GetChannelId() + " current channel recv mrcp_request_state_complete for recog stop");
-                        channel.SendRemoveChannel();
+                        AssertEquals("current channel need recv mrcp_request_state_complete for recog stop", MrcpReqState.MRCP_REQUEST_STATE_COMPLETE, (MrcpReqState)_mrcpreqstate);
+                        d("channel id: " + channel.GetChannelId() + " recv mrcp_request_state_complete for recog stop");
+                        Streaming = false;
                     }
+                    catch (CaseFailedException cfe)
+                    {
+                        _app.OnCaseFailed(this, cfe._msg);
+                    }
+                  
                 }
             }
             else if (_mrcptype == (int)MrcpMsgType.MRCP_MESSAGE_TYPE_EVENT)
@@ -208,8 +207,7 @@ namespace ucf
             {
                 _open = false;
                 _file.Close();
-            }
-            //set timer to check last result            
+            }         
             StartTimer();
         }
 
@@ -229,27 +227,31 @@ namespace ucf
             d(msg.GetBody());
         }
 
-        //public virtual void OnE
         public virtual void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             lock (_stoptimer)
             {
-                //RECOGNIZER_RECOGNITION_COMPLETE result
-                if (!resultflag)
-                {
-                    //Timeout log
-                    String channelid = _mrcp.GetChannelId();
-                    string filename = string.Format("{0}timeout/{1}_{2}", AppDomain.CurrentDomain.BaseDirectory, channelid, Name);
-                    caseresult = HWCaseResult.KEYWORD_DC_TIMEOUT;
-                    StreamWriter timeoutwriter = new StreamWriter(filename);
-                    
-                    timeoutwriter.Write("channle id :" + channelid + " timeout!!!");
-                    timeoutwriter.Close();
-                }
-                SendStopChannel(_mrcp);
                 var timer = (Timer)sender;
                 timer.Stop();
+                SendStopChannel(_mrcp);
+                AssertTrue("recv result timeout", resultflag);
             }
+        }
+
+        public override void setUp()
+        {
+            _begintime = DateTime.Now;
+        }
+
+        public override void tearDown()
+        {
+            _mrcp.SendRemoveChannel();
+            _costtime = (DateTime.Now - _begintime);
+        }
+
+        public override Double CostTime
+        {
+            get { return _costtime.TotalMilliseconds / 1000; }
         }
     }
 }

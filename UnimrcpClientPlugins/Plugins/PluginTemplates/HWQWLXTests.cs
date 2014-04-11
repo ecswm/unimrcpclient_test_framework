@@ -39,35 +39,25 @@ namespace HWQWLXTests
 
         public override void ParseNLResult(IMrcpMessage msg)
         {
-            d(msg.GetBody());
-            caseresult = HWCaseResult.QW_LX_NORMAL;
+            CaseResult += msg.GetBody();
         }
 		
 		public override void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             lock (_stoptimer)
             {
-                //RECOGNIZER_RECOGNITION_COMPLETE result
-                if (!resultflag)
+                try
                 {
-                    //Timeout log
-                    String channelid = _mrcp.GetChannelId();
-                    string filename = string.Format("{0}timeout/{1}_{2}", AppDomain.CurrentDomain.BaseDirectory, channelid, Name);
-                    caseresult = HWCaseResult.QW_LX_TIMEOUT;
-                    StreamWriter timeoutwriter = new StreamWriter(filename);
-                    
-                    timeoutwriter.Write("channle id :" + channelid + " timeout!!!");
-                    timeoutwriter.Close();
+                    var timer = (Timer)sender;
+                    timer.Stop();
+                    AssertTrue("need a resultflag true", resultflag);
+                    _app.OnCaseSuccess(this);
                 }
-                SendStopChannel(_mrcp);
-                var timer = (Timer)sender;
-                timer.Stop();
+                catch (CaseFailedException cfe)
+                {
+                    _app.OnCaseFailed(this, cfe._msg);
+                }
             }
-        }
-
-        public override void NotifyException()
-        {
-            caseresult = HWCaseResult.QW_LX_EXCEPTION;
         }
     }
 
@@ -131,14 +121,14 @@ namespace HWQWLXTests
 
     class TestApp : BaseApp
     {
-        static String pbx;
-        static String filelist;
-        static String grxml;
-        static String testmode;
-        static Int32 maxruncase = 20;
-        static volatile int runingcasecount;
         static TextWriter LOG_TW;
         static Dictionary<string, object> config;
+
+        static TestResultRep resultrep;
+        static List<ITestCase> totalcaselist;
+        static List<ITestCase> successcaselist;
+        static List<ITestCase> failcaselist;
+        static List<ITestCase> skippedcaselist;
 
         static TestApp()
         {
@@ -146,15 +136,22 @@ namespace HWQWLXTests
             config = new Dictionary<string, object>();
             config["pbx"] = "HUAWEI";
             config["mode"] = "continuous";
-            config["filelist"] = @"D:\liukaijin_70\config-asr\input_wav\keyword_lx.list";
+            config["filelist"] = @"D:\liukaijin_70\config-asr\70.list";
             config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_lx.grxml";
-            config["maxruncase"] = 1;
+            config["maxruncase"] = 20;
+            config["report"] = "./report/report2.log";
+
+            totalcaselist = new List<ITestCase>();
+            successcaselist = new List<ITestCase>();
+            failcaselist = new List<ITestCase>();
+            skippedcaselist = new List<ITestCase>();
         }
 
         public TestApp()
             : base(LOG_TW)
         {
-
+            resultrep = new TestResultRep(config["report"].ToString());
+            TotalCaseCount = 100;
         }
 
 
@@ -162,35 +159,49 @@ namespace HWQWLXTests
         {
             get
             {
-                if (config["mode"].Equals("continuous"))
-                {
-                    if (!IsRuningCaseLimit())
-                        return HWContinuousTestFactory.GetInstance(config["filelist"].ToString(), config["grxml"].ToString(), 20).GetNextCase("qw_lx_test");
-                }
-                return null;
-            }
-
-        }
-
-        public int RunningCaseCount
-        {
-            get { return runingcasecount; }
-        }
-
-        public override void IncreaseCaseCount()
-        {
-            runingcasecount += 1;
-        }
-
-        public override void DecreaseCaseCount()
-        {
-            runingcasecount -= 1;
+                 ITestCase tcase = null;
+                 if (!IsRuningCaseLimit())
+                 {
+                     tcase = HWContinuousTestFactory.GetInstance(config["filelist"].ToString(), config["grxml"].ToString(), 20).GetNextCase("qw_lx_test");
+                     totalcaselist.Add(tcase);
+                 }
+                return tcase;
+            }   
         }
 
         public override bool IsRuningCaseLimit()
         {
-            return runingcasecount >= Convert.ToInt32(config["maxruncase"].ToString()) ? true : false;
+            return CurCaseCount >= (int)config["maxruncase"] ? true : false;
         }
 
+        public override void OnCaseFailed(ITestCase tcase, String failmsg)
+        {
+            String errmsg = String.Format("case failed,reason:{0},case name: {1}", failmsg, tcase.Name);
+            i(errmsg);
+            tcase.CaseResult = errmsg;
+            tcase.tearDown();
+            failcaselist.Add(tcase);
+            resultrep.Failures += 1;
+        }
+
+        public override void OnCaseSuccess(ITestCase tcase)
+        {
+            String successmsg = String.Format("case success,case name: {0}", tcase.Name);
+            i(successmsg);
+            tcase.tearDown();
+            successcaselist.Add(tcase);
+            resultrep.Success += 1;
+        }
+
+        public override void GenerateRepo()
+        {
+            resultrep.Total = TotalCaseCount;
+            resultrep.FailCases = failcaselist.ToArray();
+            resultrep.SuccessCases = successcaselist.ToArray();
+            resultrep.SkippedCases = skippedcaselist.ToArray();
+
+            resultrep.PrintRep();
+            i(String.Format("case complete,total : {0}, success: {0}, fail: {1}", resultrep.Total, resultrep.Success, resultrep.Failures));
+        }
     }
 }

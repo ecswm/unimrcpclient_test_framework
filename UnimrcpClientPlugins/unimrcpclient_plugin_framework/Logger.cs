@@ -32,7 +32,7 @@ namespace ucf
             lock (_swLogger)
             {
                 int tid = Thread.CurrentThread.ManagedThreadId;
-                string timestamp = DateTime.UtcNow.ToString("MM-dd HH:mm:ss.fff",
+                string timestamp = DateTime.Now.ToString("MM-dd HH:mm:ss.fff",
                                             CultureInfo.InvariantCulture);
                 _sb.Clear();
                 _sb.Append(timestamp);

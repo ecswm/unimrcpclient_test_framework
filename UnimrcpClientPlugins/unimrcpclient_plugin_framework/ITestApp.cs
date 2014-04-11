@@ -30,17 +30,25 @@ namespace ucf
         ITestCase Case { get; }
         IMrcpChannelMgr ChannelMgr { get; }
         Int32 CurCaseCount { get; }
+        Int32 TotalCaseCount { get; set; }
         void IncreaseCaseCount();
         void DecreaseCaseCount();
         bool IsRuningCaseLimit();
         void OnCreate(IMrcpChannelMgr mgr);
-        void OnDestory();        
+        void OnCaseFailed(ITestCase tcase,String failmsg);
+        void OnCaseSuccess(ITestCase tcase);
+        void OnDestory();
+        void GenerateRepo();
     }
     public interface ITestCase : ILog
     {
         bool Streaming { get; }
-        
-        bool State { get; set;}
+
+        bool State { get; set; }
+
+        Double CostTime { get; }
+
+        String CaseResult { get; set; }
 
         String Name { get; }
         /// <summary>
@@ -74,6 +82,8 @@ namespace ucf
         void OnCreate(ITestApp app);
         void OnDestory();
         void SetRunningState();
+        void setUp();
+        void tearDown();
     }
     public interface ITestCaseFactory
     {
@@ -81,7 +91,7 @@ namespace ucf
         int CaseCount {  set; }
         //
     }
-
+    
     public enum HWCaseType { single = 0, continuous = 1 };
     public interface IHWCaseFactory : ITestCaseFactory
     {
@@ -89,5 +99,17 @@ namespace ucf
         String Grxml {  set; }
         String[] GetCaseFileName();
         ITestCase[] CreateHWCase();
+    }
+
+    public interface ITestResultRep
+    {
+        Int32 Total { get; set; }
+        Int32 Failures { get; set; }
+        Int32 Skipped { get; set; }
+        Int32 Success { get; set; }
+        ITestCase[] FailCases { get; set; }
+        ITestCase[] SuccessCases { get; set; }
+        ITestCase[] SkippedCases { get; set; }
+        void PrintRep();
     }
 }

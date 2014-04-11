@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Linq;
 using System.Diagnostics;
 using Microsoft.CSharp;
+using System.Windows.Forms;
 
 namespace PluginsMgr
 {
@@ -19,6 +20,7 @@ namespace PluginsMgr
     {
         static ITestApp _app;
         static volatile bool _quit = false;
+        static Int32 casecount = 0;
         static IMrcpChannelMgr _channelMgr;
         static CodeDomProvider _engine = CSharpCodeProvider.CreateProvider("csharp");
 
@@ -32,8 +34,36 @@ namespace PluginsMgr
             _channelMgr = mgr;
             String appSrc = param as String;
             _app = LoadTestApp(appSrc);
+            //AppDomain currentDomain = AppDomain.CurrentDomain;
+            //currentDomain.UnhandledException += UnhandledExceptionEventHandler;
             return _app;
         }
+        /*
+        private static void UnhandledExceptionEventHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            if (args.ExceptionObject is CaseFailedException)
+            {
+                CaseFailedException cfe = (args.ExceptionObject as CaseFailedException);
+                StackTrace st = new StackTrace(cfe);
+                string stackIndent = "";
+                for (int i = 0; i < st.FrameCount; i++)
+                {
+                    // Note that at this level, there are four 
+                    // stack frames, one for each method invocation.
+                    System.Diagnostics.StackFrame sf = st.GetFrame(i);
+                    Console.WriteLine();
+                    Console.WriteLine(stackIndent + " Method: {0}",
+                        sf.GetMethod());
+                    Console.WriteLine(stackIndent + " File: {0}",
+                        sf.GetFileName());
+                    Console.WriteLine(stackIndent + " Line Number: {0}",
+                        sf.GetFileLineNumber());
+                    stackIndent += "  ";
+                }
+                cfe._app.OnCaseFailed(cfe._tcase,cfe._msg + cfe.StackTrace);
+            }
+        }
+         * */
 
         static Dictionary<String, Assembly> assemblies = new Dictionary<String, Assembly>();
         static MainRunner()
@@ -100,7 +130,7 @@ namespace PluginsMgr
 
         public static bool Run(ICmdRunner runner)
         {
-            while (!_quit)
+            while (!_quit &!IsCaseCountLimit())
             {
                 ITestCase tc = GetNextReadyCase();
                 if (tc != null)
@@ -116,12 +146,21 @@ namespace PluginsMgr
                 //TODO:: wait with locker
                 Thread.Sleep(100);
             }
-          /*while (_app.CurCaseCount != 0)
+            while (_app.CurCaseCount != 0)
             {
                 Thread.Sleep(100);
             }
-           */
+            _app.GenerateRepo();
             return false;
+        }
+
+        private static bool IsCaseCountLimit()
+        {
+            if (casecount < _app.TotalCaseCount)
+            {
+                return false;
+            }
+            return true;
         }
 
         private static ITestCase GetNextReadyCase()
@@ -130,7 +169,9 @@ namespace PluginsMgr
             if(tcase!=null)
             {
                 tcase.OnCreate(_app);
+                tcase.setUp();
                 _app.IncreaseCaseCount();
+                casecount++;
                 return tcase;
             }
             return null;

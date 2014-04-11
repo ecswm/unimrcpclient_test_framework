@@ -264,11 +264,6 @@ static apt_bool_t recog_application_on_channel_add(mrcp_application_t *applicati
 		const apt_dir_layout_t *dir_layout = mrcp_application_dir_layout_get(application);
 		MrcpChannel::AddNewChannel(application, session, channel, (apt_dir_layout_t*) dir_layout);
 		clrS->OnChannelAdd(MrcpChannel::GetChannel(channel));
-		/* create and send DEFINE-GRAMMAR request */
-		//mrcp_message = demo_define_grammar_message_create(session,channel,dir_layout);
-		//if(mrcp_message) {
-		//	mrcp_application_message_send(session,channel,mrcp_message);
-		//}
 	}
 	else {
 		/* error case, just terminate the demo */

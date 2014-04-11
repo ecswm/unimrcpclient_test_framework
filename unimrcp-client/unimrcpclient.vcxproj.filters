@@ -53,4 +53,7 @@
   <ItemGroup>
     <ResourceCompile Include="unimrcpclient.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
 </Project>
