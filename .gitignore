@@ -4,3 +4,5 @@ bin
 bin/*
 *.suo
 *.obj
+obj
+obj/*

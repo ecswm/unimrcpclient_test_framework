@@ -8,6 +8,96 @@ using ucf;
 
 namespace HWQWDCTests
 {
+    class TestApp : BaseApp
+    {       
+        static TestApp()
+        {
+            LOG_TW = new StreamWriter(new FileStream("testapp.log", FileMode.Create, FileAccess.Write));
+            config = new Dictionary<string, object>();
+            config["pbx"] = "HUAWEI";
+            config["mode"] = "qw_dc";
+            config["filelist"] = @"D:\liukaijin_70\config-asr\input_wav\keyword_lx.list";
+            config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_dc.grxml";
+            config["maxruncase"] = 1;
+            config["report"] = "./report/report1.log";
+            config["files"] = new string[] { 
+                @"E:\jenkins\0729035.wav"
+            };
+
+            totalcaselist = new List<ITestCase>();
+            successcaselist = new List<ITestCase>();
+            failcaselist = new List<ITestCase>();
+            skippedcaselist = new List<ITestCase>();
+        }
+
+        static TextWriter LOG_TW;
+        static Dictionary<string, object> config;
+
+        static TestResultRep resultrep;
+        static List<ITestCase> totalcaselist;
+        static List<ITestCase> successcaselist;
+        static List<ITestCase> failcaselist;
+        static List<ITestCase> skippedcaselist;
+
+
+        public TestApp()
+            : base(LOG_TW)
+        {
+            resultrep = new TestResultRep(config["report"].ToString());
+            TotalCaseCount = 100;
+        }
+
+        public override ITestCase Case
+        {
+            get
+            {
+                ITestCase tcase = null;
+                if (!IsRuningCaseLimit())
+                {
+                    tcase = HWSingleTestFactory.GetInstance(config["files"] as string[], config["grxml"].ToString(), 20).GetNextCase("qw_dc_test");
+                    totalcaselist.Add(tcase);
+                }
+                return tcase;
+            }
+
+        }
+
+        public override bool IsRuningCaseLimit()
+        {
+            return CurCaseCount >= Convert.ToInt32(config["maxruncase"].ToString()) ? true : false;
+        }
+
+        public override void OnCaseFailed(ITestCase tcase, String failmsg)
+        {
+            String errmsg = String.Format("case failed,reason:{0},case name: {1}", failmsg, tcase.Name);
+            i(errmsg);
+            tcase.CaseResult = errmsg;
+            tcase.tearDown();
+            failcaselist.Add(tcase);
+            resultrep.Failures += 1;
+        }
+
+        public override void OnCaseSuccess(ITestCase tcase)
+        {
+            String successmsg = String.Format("case success,case name: {0}", tcase.Name);
+            i(successmsg);
+            tcase.tearDown();
+            successcaselist.Add(tcase);
+            resultrep.Success += 1;
+        }
+
+        public override void GenerateRepo()
+        {
+            resultrep.Total = TotalCaseCount;
+            resultrep.FailCases = failcaselist.ToArray();
+            resultrep.SuccessCases = successcaselist.ToArray();
+            resultrep.SkippedCases = skippedcaselist.ToArray();
+
+            resultrep.PrintRep();
+            i(String.Format("case complete,total : {0}, success: {0}, fail: {1}", resultrep.Total, resultrep.Success, resultrep.Failures));
+        }
+    }
+
     public class QwDcTestCase : HWTestCase
     {
         public QwDcTestCase(String name)
@@ -71,10 +161,25 @@ namespace HWQWDCTests
         private static Int32  curcaseindex = 0;
         private static Int32  casecount = 0;
 
+        private HWSingleTestFactory(String[] files, String grxml, Int32 casecount)
+            : base(files, grxml, casecount)
+        {
+
+        }
+
         private HWSingleTestFactory(String filepath, String grxml, Int32 casecount)
             : base(filepath, grxml, casecount)
         {
 
+        }
+
+        public static HWSingleTestFactory GetInstance(String[] files, String grxml, Int32 casecount)
+        {
+            if (instance == null)
+            {
+                return new HWSingleTestFactory(files, grxml, casecount);
+            }
+            return instance;
         }
 
         public static HWSingleTestFactory GetInstance(String filepath, String grxml, Int32 casecount)
@@ -123,87 +228,5 @@ namespace HWQWDCTests
 
     }
 
-    class TestApp : BaseApp
-    {
-        static TextWriter LOG_TW;
-        static Dictionary<string, object> config;
-        
-        static TestResultRep resultrep;
-        static List<ITestCase> totalcaselist;
-        static List<ITestCase> successcaselist;
-        static List<ITestCase> failcaselist;
-        static List<ITestCase> skippedcaselist;
-
-        static TestApp(){
-            LOG_TW = new StreamWriter(new FileStream("testapp.log", FileMode.Create, FileAccess.Write));
-            config = new Dictionary<string, object>();
-            config["pbx"] = "HUAWEI";
-            config["mode"] = "qw_dc";
-            config["filelist"] = @"D:\liukaijin_70\config-asr\input_wav\keyword_lx.list";
-            config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_dc.grxml";
-            config["maxruncase"] = 1;
-            config["report"] = "./report/report1.log";
-
-            totalcaselist = new List<ITestCase>();
-            successcaselist = new List<ITestCase>();
-            failcaselist = new List<ITestCase>();
-            skippedcaselist = new List<ITestCase>();
-        }
-
-        public TestApp():base(LOG_TW)
-        {
-            resultrep = new TestResultRep(config["report"].ToString());
-            TotalCaseCount = 100;
-        }
-
-        public override ITestCase Case
-        {
-            get
-            {
-                ITestCase tcase = null;
-                if (!IsRuningCaseLimit())
-                {
-                     tcase = HWSingleTestFactory.GetInstance(config["filelist"].ToString(), config["grxml"].ToString(), 20).GetNextCase("qw_dc_test");
-                     totalcaselist.Add(tcase);
-                }         
-                return tcase;
-            }
-           
-        }
-
-        public override  bool IsRuningCaseLimit()
-        {
-            return CurCaseCount >= Convert.ToInt32(config["maxruncase"].ToString()) ? true : false;
-        }
-
-        public override void OnCaseFailed(ITestCase tcase,String failmsg)
-        {
-            String errmsg = String.Format("case failed,reason:{0},case name: {1}",failmsg,tcase.Name);
-            i(errmsg);
-            tcase.CaseResult = errmsg;
-            tcase.tearDown();
-            failcaselist.Add(tcase);
-            resultrep.Failures += 1;
-        }
-
-        public override void OnCaseSuccess(ITestCase tcase)
-        {
-            String successmsg = String.Format("case success,case name: {0}", tcase.Name);
-            i(successmsg);
-            tcase.tearDown();
-            successcaselist.Add(tcase);
-            resultrep.Success += 1;
-        }
-
-        public override void GenerateRepo()
-        {
-            resultrep.Total = TotalCaseCount;
-            resultrep.FailCases = failcaselist.ToArray();
-            resultrep.SuccessCases = successcaselist.ToArray();
-            resultrep.SkippedCases = skippedcaselist.ToArray();
-
-            resultrep.PrintRep();
-            i(String.Format("case complete,total : {0}, success: {0}, fail: {1}", resultrep.Total,resultrep.Success, resultrep.Failures));
-        }
-    }
+    
 }

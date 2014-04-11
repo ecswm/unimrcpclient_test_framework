@@ -42,6 +42,13 @@ namespace ucf
             CaseCount = casecount;
         }
 
+        public HWBaseFactory(String[] files, String grxml, int casecount)
+        {
+            Files = files;//GetCaseFileName(filepath);
+            Grxml = grxml;
+            CaseCount = casecount;
+        }
+
         public virtual ITestCase[] CreateHWCase()
         {
             return new ITestCase[1];

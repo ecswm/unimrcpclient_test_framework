@@ -7,8 +7,8 @@
     <!-- SIP MRCPv2 settings -->
     <sip-settings id="UniMRCP-SIP-Settings">
       <!-- Server address should be explicitly specified, it defaults to "ip" address set in the properties. -->
-      <server-ip>192.168.5.62</server-ip>
-      <server-port>11080</server-port>
+      <server-ip>192.168.5.63</server-ip>
+      <server-port>5060</server-port>
       <!-- <force-destination>true</force-destination> -->
     </sip-settings>
     

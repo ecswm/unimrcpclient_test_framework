@@ -10,7 +10,7 @@
     -->
     <ip type="auto"/>
     <!-- <ext-ip>a.b.c.d</ext-ip> -->
-    <server-ip>192.168.5.121</server-ip> -->
+    <server-ip>192.168.5.63</server-ip> -->
   </properties>
 
   <components>
