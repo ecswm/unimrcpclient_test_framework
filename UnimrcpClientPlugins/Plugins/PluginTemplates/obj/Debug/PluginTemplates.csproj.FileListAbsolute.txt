@@ -1,4 +1,0 @@
-C:\MyProjects\UnimrcpClientPlugins\Plugins\PluginTemplates\bin\Debug\PluginTemplates.dll
-C:\MyProjects\UnimrcpClientPlugins\Plugins\PluginTemplates\bin\Debug\PluginTemplates.pdb
-C:\MyProjects\UnimrcpClientPlugins\Plugins\PluginTemplates\obj\Debug\PluginTemplates.dll
-C:\MyProjects\UnimrcpClientPlugins\Plugins\PluginTemplates\obj\Debug\PluginTemplates.pdb

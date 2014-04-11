@@ -82,7 +82,6 @@ namespace ucf
         public virtual void OnDestory()
         {
             d(String.Format("OnDestory({0})", _channelMgr.GetHashCode()));
-            _logger.Finish();
         }
 
         public virtual void OnCaseFailed(ITestCase tcase,String failmsg)

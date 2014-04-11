@@ -1,0 +1,6 @@
+Debug
+Debug/*
+bin
+bin/*
+*.suo
+*.obj

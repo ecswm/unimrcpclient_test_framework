@@ -8,6 +8,8 @@ using System.Timers;
 using ucf;
 using System.IO;
 using System.Configuration;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tests_Total
 {
@@ -346,6 +348,7 @@ namespace Tests_Total
             config["filelist"] = @"D:\liukaijin_70\config-asr\70.list";
             config["grxml"] = "http://192.168.5.72:8080/asr_gram/qw_dc.grxml";
             config["maxruncase"] = 20;
+            config["exitserver"] = true;
         }
 
         public TestApp():base(LOG_TW)
@@ -386,6 +389,28 @@ namespace Tests_Total
         public override  bool IsRuningCaseLimit()
         {
             return runingcasecount >= Convert.ToInt32(config["maxruncase"].ToString()) ? true : false;
+        }
+
+        public override void OnDestory()
+        {
+            if (config.ContainsKey("exitserver") && (bool)config["exitserver"])
+            {
+                try
+                {
+                    //tell server to exit
+                    IPEndPoint remote = new IPEndPoint(IPAddress.Parse("192.168.5.63"), 12345);
+                    Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    sock.Connect(remote);
+                    byte[] data = UTF8Encoding.UTF8.GetBytes("exit\n");
+                    sock.Send(data);
+                    sock.Close();
+                }
+                catch (Exception e)
+                {
+                    d(e.ToString());
+                }
+            }
+            base.OnDestory();
         }
     }
 
